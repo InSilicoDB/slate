@@ -28,7 +28,7 @@ docker run --rm -v $PWD:/usr/src/app/source -w /usr/src/app/source slate_app bun
 ### Deploy
 
 ```
-aws s3 cp --recursive ./ s3://docs.geneplaza.com
+aws s3 cp --recursive build/ s3://docs.geneplaza.com
 ```
 
 Features
