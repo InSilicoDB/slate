@@ -10,6 +10,27 @@
 
 <p align="center"><em>The example above was created with Slate. Check it out at <a href="https://lord.github.io/slate">lord.github.io/slate</a>.</em></p>
 
+How to use in GenePlaza
+------------
+### Development
+
+```
+docker-compose up
+```
+go to http://localhost:4567/
+
+### Building
+
+```
+docker run --rm -v $PWD:/usr/src/app/source -w /usr/src/app/source slate_app bundle exec middleman build --clean
+```
+
+### Deploy
+
+```
+aws s3 cp --recursive ./ s3://docs.geneplaza.com
+```
+
 Features
 ------------
 
