@@ -20,6 +20,19 @@ Welcome to the GenePlaza Developer API! You can use our API to access genetic in
 
 # Authentication
 
+To be able to authenticate you will first need to have **credentials**. Contact us for this.
+When an analysis is started a webhook of yours is called with the the `authorizationCode`. Use this `authorizationCode` to authenticate and get an `accessToken` back.
+
+Once you have **credentials** you also need to register an application. You can have several applications registered per account. Each application need to have a two endpoints:
+
+* one webhook for the computation of the customer's results, which is triggered by the developer api when a customer order it.
+* one for sending the results of the user to your UX
+
+## Authentication with an authorization_code
+
+This is the way authenticate when you want to get access to a dataset genetic information.
+The `authorization_code` is sent by us to your webhook registered in your application.
+
 > To authorize, use this code:
 
 ```shell
@@ -33,7 +46,7 @@ curl -X POST \
          "type": "token",
          "attributes": {
            "grant_type": "authorization_code",
-           "code": <your_access_token>,
+           "code": <authorization_code>,
            "scope": "analysis"
          }
     }
@@ -55,20 +68,255 @@ curl -X POST \
 }
 ```
 
-To be able to authenticate you will first need to have **credentials**. Contact us for this.
-When an analysis is started a webhook of yours is called with the the `authorizationCode`. Use this `authorizationCode` to authenticate and get an `accessToken` back.
+### Parameters
 
-Once you have **credentials** you also need to register an application. You can have several applications registered per account. Each application need to have a two endpoints:
+Parameter | Default | Description
+--------- | ------- | -----------
+64encode_usercredentials | false | base64 encode of `username:password`
+authorization_code | false | This you get from us with the webhook.
 
-* one webhook for the computation of the customer's results, which is triggered by the developer api when a customer order it.
-* one for sending the results of the user to your UX
+## Authentication with credentials
+
+This way of authentication is used for:
+
+* accessing the `application` endpoints
+* accessing the `analysis` endpoints
+
+```shell
+curl -X POST \
+  https://developer.geneplaza.com/token \
+  -H 'authorization: Basic <64encode_usercredentials>' \
+  -H 'content-type: application/json' \
+  -d '{
+	"data": {
+         "type": "token",
+         "attributes": {
+           "grant_type": "client_credentials",
+           "scope": "developer"
+         }
+    }
+}'
+```
 
 ### Parameters
 
 Parameter | Default | Description
 --------- | ------- | -----------
-credentials | false | base64 encode of `username:password`
-access_token | false | This you get from us with the webhook.
+64encode_usercredentials | false | base64 encode of `username:password`
+
+# Application
+
+## Create an application
+
+```shell
+curl -X POST \
+  https://developer.geneplaza.com/applications \
+  -H 'authorization: Bearer <access_token>' \
+  -H 'content-type: application/json' \
+  -d '{
+	"data" : {
+        "type":"application",
+        "attributes":{
+            "name" : "myApp",
+            "description" : "some app",
+            "webhook": "http://localhost:400/test",
+            "webhookHeaders": {
+            	"api-key": "secret"
+            }
+        }
+	}
+}
+'
+```
+
+```json
+{
+    "data": {
+        "type": "application",
+        "id": 61,
+        "links": {
+            "self": "http://192.168.99.100:8180/applications/61"
+        },
+        "attributes": {
+            "name": "myApp",
+            "description": "some app",
+            "featuredImage": null,
+            "productImages": [],
+            "cost": 0,
+            "qualityRequirement": 0,
+            "webhook": "http://localhost:400/test",
+            "webhookHeaders": {
+                "api-key": "secret"
+            }
+        }
+    }
+}
+```
+
+### Parameters
+
+Parameter | Required | Description
+--------- | ------- | -----------
+access_token | true | Your access_token after login
+name | true | name of your app
+description | true | Description of your app
+webhook | true | endpoint we call when analysis is requested by user
+webhookHeaders | false | optional if you want to add some headers to the call we do to your endpoint
+
+## Update an application
+
+```shell
+curl -X PATCH \
+  https://developer.geneplaza.com/applications/<applicationId> \
+  -H 'authorization: Bearer <access_token>' \
+  -H 'content-type: application/json' \
+  -d '{
+	"data" : {
+        "type":"application",
+        "attributes":{
+            "name" : "myApp",
+            "description" : "some app",
+            "webhook": "http://localhost:400/test",
+            "webhookHeaders": {
+            	"api-key": "secret"
+            }
+        }
+	}
+}
+'
+```
+
+```json
+{
+    "data": {
+        "type": "application",
+        "id": 61,
+        "links": {
+            "self": "http://192.168.99.100:8180/applications/61"
+        },
+        "attributes": {
+            "name": "myApp",
+            "description": "some app",
+            "featuredImage": null,
+            "productImages": [],
+            "cost": 0,
+            "qualityRequirement": 0,
+            "webhook": "http://localhost:400/test",
+            "webhookHeaders": {
+                "api-key": "secret"
+            }
+        }
+    }
+}
+```
+### Parameters
+
+Parameter | Required | Description
+--------- | ------- | -----------
+access_token | true | Your access_token after login
+applicationId | true | The id of your application
+name | false | name of your app
+description | false | Description of your app
+webhook | false | endpoint we call when analysis is requested by user
+webhookHeaders | false | optional if you want to add some headers to the call we do to your endpoint
+
+
+## Get an application
+
+```shell
+curl -X GET \
+  https://developer.geneplaza.com/applications/<applicationId> \
+  -H 'authorization: Bearer <access_token>'
+```
+
+```json
+{
+    "data": {
+        "type": "application",
+        "id": 61,
+        "links": {
+            "self": "http://192.168.99.100:8180/applications/61"
+        },
+        "attributes": {
+            "name": "myApp",
+            "description": "some app",
+            "featuredImage": null,
+            "productImages": [],
+            "cost": 0,
+            "qualityRequirement": 0,
+            "webhook": "http://localhost:400/test",
+            "webhookHeaders": {
+                "api-key": "secret"
+            }
+        }
+    }
+}
+```
+
+### Parameters
+
+Parameter | Required | Description
+--------- | ------- | -----------
+access_token | true | Your access_token after login
+applicationId | true | The id of your application
+
+## Get all your applications
+
+```shell
+curl -X GET \
+  https://developer.geneplaza.com/applications \
+  -H 'authorization: Bearer <access_token>'
+```
+
+```json
+{
+    "data": [
+        {
+            "type": "application",
+            "id": 52,
+            "links": {
+                "self": "https://developer.geneplaza.com/applications/52"
+            },
+            "attributes": {
+                "name": "Abacavir-response",
+                "description": "''",
+                "featuredImage": "''",
+                "productImages": [],
+                "cost": 0,
+                "qualityRequirement": 0,
+                "webhook": "http://localhost:6001/analysis?humanTraitIds=24&format=jsonapi",
+                "webhookHeaders": []
+            }
+        },
+        {
+            "type": "application",
+            "id": 59,
+            "links": {
+                "self": "https://developer.geneplaza.com/applications/59"
+            },
+            "attributes": {
+                "name": "myApp",
+                "description": "some app",
+                "featuredImage": null,
+                "productImages": [],
+                "cost": 0,
+                "qualityRequirement": 0,
+                "webhook": "http://localhost:400/test",
+                "webhookHeaders": {
+                    "api-key": "secret"
+                }
+            }
+        }
+    ]
+}
+```
+
+### Parameters
+
+Parameter | Required | Description
+--------- | ------- | -----------
+access_token | true | Your access_token after login
+
 
 # Make an analysis
 
@@ -229,6 +477,39 @@ analysisId | true | Analysis for which you want to set the state
 status | true | `ready` or `error`
 accessToken | true | Your accessToken for this dataset
 
+## Get an analysis
+
+```shell
+curl -X GET \
+  'https://developer.geneplaza.com/analysis/<analysisId>' \
+  -H 'authorization: Bearer <accessToken>'
+```
+
+```json
+{
+    "data": {
+        "type": "analysis",
+        "id": <analysisId>,
+        "links": {
+            "self": "https://developer.geneplaza.com/analysis/<analysisId>"
+        },
+        "attributes": {
+            "applicationId": <int>,
+            "datasetId": <int>,
+            "status": "ready",
+            "notes": ""
+        }
+    }
+}
+```
+### Parameters
+
+Parameter | Required | Description
+--------- | ------- | -----------
+analysisId | true | Id of the analysis
+accessToken | true | Your accessToken for this dataset
+
+
 # Accessing the report in the UI
 
 ## How it works
@@ -250,3 +531,90 @@ You could also save the content in your own DB and load it the way you like.
   }), <yourUIOrigin>);
 
 ```
+
+# Testing your application
+
+Only a certain role can start analysises, so to test your application there is an API endpoint
+made that allows application developers to start analysises and get authorization_code for certain
+datasets.
+
+## Login to get an accessToken
+```shell
+curl -X POST \
+  https://developer.geneplaza.com/token \
+  -H 'authorization: Basic <64encode_usercredentials>' \
+  -H 'content-type: application/json' \
+  -d '{
+	"data": {
+         "type": "token",
+         "attributes": {
+           "grant_type": "client_credentials",
+           "scope": "developer"
+         }
+    }
+}'
+```
+
+```json
+{
+    "data": {
+        "type": "token",
+        "id": <accessToken>,
+        "attributes": {
+            "accessToken": <accessToken>,
+            "expiresIn": 3600,
+            "tokenType": "Bearer",
+            "scope": "developer"
+        }
+    }
+}
+```
+
+### Parameters
+
+Parameter | Default | Description
+--------- | ------- | -----------
+64encode_usercredentials | false | base64 encode of `username:password`
+
+## Start a test analysis
+
+```shell
+curl -X POST \
+  'https://developer.geneplaza.com/analysis' \
+  -H 'authorization: Bearer <accessToken>' \
+  -H 'content-type: application/json' \
+  -d ' {
+        "data" : {
+          "type":"analysis",
+          "attributes":{
+            "applicationId" : <your_application_id>,
+            "datasetId" : 18
+          }
+       }
+  }'
+```
+
+```json
+{
+    "data": {
+        "type": "analysis",
+        "id": <analysisId>,
+        "links": {
+            "self": "http://192.168.99.100:8180/analysis/9056"
+        },
+        "attributes": {
+            "applicationId": <applicationId>,
+            "datasetId": 18,
+            "status": "running",
+            "notes": ""
+        }
+    }
+}
+```
+### Parameters
+
+Parameter | Required | Description
+--------- | ------- | -----------
+datasetId | true | Id of the dataset you which to have access to the genetic data. For testing are `18` and `227` available
+accessToken | true | Your accessToken, got by logging in.
+applicationId | true | The id of your application
