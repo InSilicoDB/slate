@@ -77,10 +77,8 @@ authorization_code | false | This you get from us with the webhook.
 
 ## Authentication with credentials
 
-This way of authentication is used for:
+This way of authentication is used for accessing the `application` endpoints.
 
-* accessing the `application` endpoints
-* accessing the `analysis` endpoints
 
 ```shell
 curl -X POST \
