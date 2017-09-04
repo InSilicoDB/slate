@@ -32,7 +32,9 @@ Once you have **credentials** you also need to register an application. You can 
 
 This is the way authenticate when you want to get access to a dataset genetic information.
 The `authorization_code` is sent by us to your webhook registered in your application.
-
+<aside class="info">
+The access token you will get back, will give you access to the `analysis`, `snp` and `report pages` endpoints.
+</aside>
 > To authorize, use this code:
 
 ```shell
@@ -79,6 +81,9 @@ authorization_code | false | This you get from us with the webhook.
 
 This way of authentication is used for accessing the `application` endpoints.
 
+<aside class="warning">
+You also can use this type of authentication to access the `analysisTest` endpoint.
+</aside>
 
 ```shell
 curl -X POST \
@@ -532,7 +537,7 @@ You could also save the content in your own DB and load it the way you like.
 
 # Testing your application
 
-Only a certain role can start analysises, so to test your application there is an API endpoint
+Only a certain role can start analysises. To be able to test your application there is an API endpoint
 made that allows application developers to start analysises and get authorization_code for certain
 datasets.
 
@@ -578,7 +583,7 @@ Parameter | Default | Description
 
 ```shell
 curl -X POST \
-  'https://developer.geneplaza.com/analysis' \
+  'https://developer.geneplaza.com/analysistest' \
   -H 'authorization: Bearer <accessToken>' \
   -H 'content-type: application/json' \
   -d ' {
@@ -604,11 +609,17 @@ curl -X POST \
             "applicationId": <applicationId>,
             "datasetId": 18,
             "status": "running",
-            "notes": ""
+            "notes": "",
+            "authorizationCode": "someAuthorizationCode"
         }
     }
 }
 ```
+
+<aside class="warning">
+With the `authorizationCode` returned from the analysis creation, you can access the `analysis`, `snp` and `report pages` endpoints.
+</aside>
+
 ### Parameters
 
 Parameter | Required | Description
