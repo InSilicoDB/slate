@@ -517,10 +517,14 @@ accessToken | true | Your accessToken for this dataset
 
 ## How it works
 
-The content of the report is sent by javascript from the origin `https://www.geneplaza.com` with  `postMessage` to the your UI endpoint.
+The content of the report is sent by javascript from the origin `https://www.geneplaza.com` with  `postMessage` to the your UI endpoint. Your UI endpoint is opened in a iframe in the GenePlaza website.
 
 <aside class="info">
 You could also save the content in your own DB and load it the way you like.
+</aside>
+
+<aside class="info">
+To the URL of your endpoint we append a query parameter `analysisId`, and open this URL in a iframe.
 </aside>
 
 
@@ -529,11 +533,18 @@ You could also save the content in your own DB and load it the way you like.
   JSON.stringify({
     preview: true|false,
     lang: "nl|en|fr",
-    content: <content> //TODO,
-    datasetId: <datasetId> //TODO
+    reportPage: <reportPage>,
+    analysisId: <analysisId>
   }), <yourUIOrigin>);
 
 ```
+
+### Parameters
+
+Parameter  | Description
+---------  | -----------
+analysisId | Id of the analysis
+reportPage | The content saved by your application for this analysis
 
 # Testing your application
 
