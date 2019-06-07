@@ -14,11 +14,165 @@ language_tabs: # must be one of https://git.io/vQNgJ
 search: true
 ---
 
-# Introduction
+# GenePlaza Developer API
+**Introduction**
 
-Welcome to the GenePlaza Developer API! You can use our API to access genetic information of our users.
+GenePlaza helps you to quickly develop Genetic Apps to distribute them in our Genetic App Store or to use them on your own site.
 
-# Authentication
+# Access genetic traits
+
+## Create a dataset
+
+Create a dataset by uploading your data in .txt or .zip format. We support build_37 data from 23andme, AncestryDNA, and MyHeritage.
+
+### Upload data
+
+```shell
+curl -F ‘data=@path/to/local/genotype/file.[txt|zip]’ \
+  -H 'authorization: Bearer <accessToken>' \
+  'https://developer.geneplaza.com/upload'
+```
+
+```json
+{
+    "data": {
+        "type": "dataset",
+        "id": <datasetId>,
+        "links": {
+            "self": "https://developer.geneplaza.com/dataset/<datasetId>"
+        },
+        "attributes": {
+            "datasetId": 18
+        }
+    }
+}
+```
+
+Upload a 23andme, AncestryDNA, MyHeritage file and a dataset will be created.
+
+<aside class="notice">
+You must concatenate MyHeritage files to include autosomal DNA followed by the X chromosome.
+</aside>
+
+## Traits
+### List traits
+
+```shell
+curl -X GET -H 'authorization: Bearer <accessToken>' \
+   'https://developer.geneplaza.com/traits'
+```
+
+```json
+{
+    "data": [
+      {
+        "type": "trait",
+        "id": <traitid>,
+        "attributes": {
+          "name": "ancestry",
+          "variants": ["rs23432",..., "rs23432"]
+        }
+      },
+      {
+        "type": "trait",
+        "id": <traitid>,
+        "attributes": {
+          "name": "coffee_metabolism",
+          "variants": ["rs72893",..., "rs83738"]
+        }
+      }
+    ]
+}
+```
+
+List all traits available.
+
+This method returns all available traits available from the GenePlaza API. Use the ```<traitid>``` and a ```<datasetid>``` to request traits for given dataset.
+
+### Get trait for dataset
+
+```shell
+curl -X GET -H 'authorization: Bearer <accessToken>' \
+'https://developer.geneplaza.com/dataset/<datasetId>/trait/<traitId>'
+```
+
+```json
+{
+    "data": {
+      "type": "trait-result",
+      "id": <trait-result>,
+      "attributes": {
+          "status": "running",
+      }
+    }
+}
+```
+```json
+OR when ready
+
+{
+    "data": {
+      "type": "trait-result",
+      "id": <trait-result>,
+      "attributes": {
+          "status": "ready",
+          "type": "binary | quantitative",
+          "effectSizeDistributions": {
+              "EUR": [[x1,y1], [x2,y2], ...],
+              "EAS": [[x1,y1], [x2,y2], ...],
+              "AFR": [[x1,y1], [x2,y2], ...],
+              "AMR": [[x1,y1], [x2,y2], ...],
+              "SAS": [[x1,y1], [x2,y2], ...]
+          },
+          "zScore": 0.5,
+          "effectSize": 23.2343,
+          "ethnicity": "EUR",
+          "genotypeScores": {
+            "rs78503206": {
+              "genotype": "CC",
+              "effectSize": 0.052336227229741565
+            },
+            "rs6554267": {
+              "genotype": "TT",
+              "effectSize": -0.0324724484302187
+            },
+            "rs7227945": {
+              "genotype": "TT",
+              "effectSize": -0.035994294104095395
+            },
+            "rs72921001": {
+              "genotype": "AA",
+              "effectSize": -0.27263571801638176
+            },
+            "rs75378433": {
+              "genotype": "CC",
+              "effectSize": 0.05236703124421473
+            },
+            "rs13412810": {
+              "genotype": "GG",
+              "effectSize": 0.07638294299624267
+            }
+          }
+        }
+      }
+    }
+}
+```
+
+This will generate and get the trait results for a given datasetId.
+
+#### Parameters
+
+| Parameter     | Required | Description                                                                                              |
+| ------------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| accessToken   | true     | Your accessToken                                                                     |
+| datasetId     | true     | Id of the dataset you which to have access to the genetic data.|
+| traitId | true     | The id of the trait you want results for                                                                               |
+
+
+# Deploy App Store applications 
+
+## Authentication
 
 To be able to authenticate you first need to have **credentials**. Contact us for this.
 When an analysis is started a webhook of yours is called with the the `authorizationCode`. Use this `authorizationCode` to authenticate and get an `accessToken` back.
@@ -28,7 +182,7 @@ Once you have **credentials** you also need to register an application. You can 
 -   one webhook for the computation of the customer's results, which is triggered by the developer api when a customer order it.
 -   one for sending the results of the user to your UX
 
-## Authentication with an authorization_code
+### Authentication with an authorization_code
 
 This is the way authenticate when you want to get access to a dataset genetic information.
 The `authorization_code` is sent by us to your webhook registered in your application.
@@ -71,14 +225,14 @@ curl -X POST \
 }
 ```
 
-### Parameters
+#### Parameters
 
 | Parameter                | Default | Description                            |
 | ------------------------ | ------- | -------------------------------------- |
 | 64encode_usercredentials | false   | base64 encode of `username:password`   |
 | authorization_code       | false   | This you get from us with the webhook. |
 
-## Authentication with credentials
+### Authentication with credentials
 
 This way of authentication is used for accessing the `application` endpoints.
 
@@ -102,13 +256,11 @@ curl -X POST \
 }'
 ```
 
-### Parameters
+#### Parameters
 
 | Parameter                | Default | Description                          |
 | ------------------------ | ------- | ------------------------------------ |
 | 64encode_usercredentials | false   | base64 encode of `username:password` |
-
-# Application
 
 ## Create an application
 
@@ -264,7 +416,7 @@ curl -X GET \
 | access_token  | true     | Your access_token after login |
 | applicationId | true     | The id of your application    |
 
-## Get all your applications
+## List all your applications
 
 ```shell
 curl -X GET \
@@ -321,8 +473,6 @@ curl -X GET \
 | ------------ | -------- | ----------------------------- |
 | access_token | true     | Your access_token after login |
 
-# Make an analysis
-
 ## Start of an analysis
 
 > We call your webhook with following call:
@@ -347,8 +497,6 @@ curl -X POST \
 Remember — We call your webhook with this call! You don't have to use this code,
 but you need the attributes of the body to be able to use the API.
 </aside>
-
-### Data you need
 
 | Parameter         | Description                                                                                                                              |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
@@ -402,7 +550,7 @@ curl -X GET \
 
 ### HTTP Request
 
-`GET https://developer.geneplaza.com/datasets/18/SNP?names=rs7221412%20rs17822931%20&quality=0.80`
+`GET https://developer.geneplaza.com/datasets/18/SNP?names=rs7221412 rs17822931 &quality=0.80`
 
 ### Query Parameters
 
@@ -412,13 +560,13 @@ curl -X GET \
 | quality   | 0.8     | quality or probability of the genotype, number between 0 and 1 |
 | names     | `null`  | list of space separated SNPs ids                               |
 
-### Headers Parameters
+#### Headers Parameters
 
 | Parameter     | Description                             |
 | ------------- | --------------------------------------- |
 | Authorization | `Bearer` followed by your `accessToken` |
 
-## Save an analysis report
+### Save an analysis report
 
 ```shell
 curl -X POST \
@@ -442,7 +590,7 @@ curl -X POST \
 
 Once you have computed results with the genetic data of the user, you can save the results of the analysis.
 
-### Parameters
+#### Parameters
 
 | Parameter   | Required | Description                          |
 | ----------- | -------- | ------------------------------------ |
@@ -451,7 +599,7 @@ Once you have computed results with the genetic data of the user, you can save t
 | content     | true     | Content of the report                |
 | accessToken | true     | Your accessToken for this dataset    |
 
-## Finish the analysis
+### Finish the analysis
 
 ```shell
 curl -X PATCH \
@@ -475,7 +623,7 @@ curl -X PATCH \
 
 Once the analysis is done you can mark it as finished. When the analysis is finished and in state `ready` it is accessible by the GenePlaza website for the customer. The customer is notified by email.
 
-### Parameters
+#### Parameters
 
 | Parameter   | Required | Description                                  |
 | ----------- | -------- | -------------------------------------------- |
@@ -483,7 +631,7 @@ Once the analysis is done you can mark it as finished. When the analysis is fini
 | status      | true     | `ready` or `error`                           |
 | accessToken | true     | Your accessToken for this dataset            |
 
-## Get an analysis
+### Get an analysis
 
 ```shell
 curl -X GET \
@@ -509,16 +657,16 @@ curl -X GET \
 }
 ```
 
-### Parameters
+#### Parameters
 
 | Parameter   | Required | Description                       |
 | ----------- | -------- | --------------------------------- |
 | analysisId  | true     | Id of the analysis                |
 | accessToken | true     | Your accessToken for this dataset |
 
-# Accessing the report in the UI
+## Accessing the report in the UI
 
-## How it works
+### Introduction - How it works
 
 The content of the report is sent by javascript from the origin `https://www.geneplaza.com` with  `postMessage` to the your UI endpoint. Your UI endpoint is opened in a iframe in the GenePlaza website.
 
@@ -540,20 +688,20 @@ To the URL of your endpoint we append a query parameter `analysisId`, and open t
   }), <yourUIOrigin>);
 ```
 
-### Parameters
+#### Parameters
 
 | Parameter  | Description                                             |
 | ---------- | ------------------------------------------------------- |
 | analysisId | Id of the analysis                                      |
 | reportPage | The content saved by your application for this analysis |
 
-# Testing your application
+## Testing your application
 
 Only a certain role can start analysises. To be able to test your application there is an API endpoint
 made that allows application developers to start analysises and get authorization_code for certain
 datasets.
 
-## Login to get an accessToken
+### Login to get an accessToken
 
 ```shell
 curl -X POST \
@@ -586,13 +734,13 @@ curl -X POST \
 }
 ```
 
-### Parameters
+#### Parameters
 
 | Parameter                | Default | Description                          |
 | ------------------------ | ------- | ------------------------------------ |
 | 64encode_usercredentials | false   | base64 encode of `username:password` |
 
-## Start a test analysis
+### Start a test analysis
 
 ```shell
 curl -X POST \
@@ -632,7 +780,7 @@ curl -X POST \
 With the `authorizationCode` returned from the analysis creation, you can access the `analysis`, `snp` and `report pages` endpoints.
 </aside>
 
-### Parameters
+#### Parameters
 
 | Parameter     | Required | Description                                                                                              |
 | ------------- | -------- | -------------------------------------------------------------------------------------------------------- |
@@ -640,141 +788,5 @@ With the `authorizationCode` returned from the analysis creation, you can access
 | accessToken   | true     | Your accessToken, got by logging in.                                                                     |
 | applicationId | true     | The id of your application                                                                               |
 
-# Create a dataset
 
-## Upload data
-
-```shell
-curl -F ‘data=@path/to/local/genotype/file.[tex|zip]’ \
-  -H 'authorization: Bearer <accessToken>' \
-  'https://developer.geneplaza.com/upload'
-```
-
-```json
-{
-    "data": {
-        "type": "dataset",
-        "id": <datasetId>,
-        "links": {
-            "self": "https://developer.geneplaza.com/dataset/<datasetId>"
-        },
-        "attributes": {
-            "datasetId": 18
-        }
-    }
-}
-```
-
-Upload a 23andme, AncestryDNA, MyHeritage file and a dataset will be created.
-
-# Traits
-
-## List traits
-
-```shell
-curl -X GET -H 'authorization: Bearer <accessToken>' 'https://developer.geneplaza.com/traits'
-```
-
-```json
-{
-    "data": [
-      {
-        "type": "trait",
-        "id": <traitid>,
-        "attributes": {
-          "name": "todo",
-          "variants": ["rs23432", "rs23432"]
-        }
-      },
-      {
-        "type": "trait",
-        "id": <traitid>,
-        "attributes": {
-          "name": "todo",
-          "variants": ["rs23432", "rs23432"]
-        }
-      }
-    ]
-}
-```
-
-List all traits available.
-
-## Get trait for dataset
-
-```shell
-curl -X GET -H 'authorization: Bearer <accessToken>' 'https://developer.geneplaza.com/dataset/<datasetId>/trait/<traitId>'
-```
-
-```json
-{
-    "data": {
-      "type": "trait-result",
-      "id": <trait-result>,
-      "attributes": {
-          "status": "running",
-      }
-    }
-}
-```
-```json
-OR when ready
-
-{
-    "data": {
-      "type": "trait-result",
-      "id": <trait-result>,
-      "attributes": {
-          "status": "ready",
-          "type": "binary | quantitative",
-          "effectSizeDistributions": {
-              "EUR": [[x1,y1], [x2,y2], ...],
-              "EAS": [[x1,y1], [x2,y2], ...],
-              "AFR": [[x1,y1], [x2,y2], ...],
-              "AMR": [[x1,y1], [x2,y2], ...],
-              "SAS": [[x1,y1], [x2,y2], ...]
-          },
-          "zScore": 0.5,
-          "effectSize": 23.2343,
-          "ethnicity": "EUR",
-          "genotypeScores": {
-            "rs78503206": {
-              "genotype": "CC",
-              "effectSize": 0.052336227229741565
-            },
-            "rs6554267": {
-              "genotype": "TT",
-              "effectSize": -0.0324724484302187
-            },
-            "rs7227945": {
-              "genotype": "TT",
-              "effectSize": -0.035994294104095395
-            },
-            "rs72921001": {
-              "genotype": "AA",
-              "effectSize": -0.27263571801638176
-            },
-            "rs75378433": {
-              "genotype": "CC",
-              "effectSize": 0.05236703124421473
-            },
-            "rs13412810": {
-              "genotype": "GG",
-              "effectSize": 0.07638294299624267
-            }
-          }
-        }
-      }
-    }
-}
-```
-
-This will generate and get the results of a trait for a dataset.
-
-### Parameters
-
-| Parameter     | Required | Description                                                                                              |
-| ------------- | -------- | -------------------------------------------------------------------------------------------------------- |
-| datasetId     | true     | Id of the dataset you which to have access to the genetic data.|
-| accessToken   | true     | Your accessToken                                                                     |
-| traitId | true     | The id of the trait you want results for                                                                               |
+//-----------------Documentation for use of API-------------------

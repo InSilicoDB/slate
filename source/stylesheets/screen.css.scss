@@ -102,6 +102,7 @@ html, body {
   }
 
   .logo {
+    filter: invert(100%);
     margin-bottom: $logo-margin;
   }
 
@@ -156,13 +157,13 @@ html, body {
   // This is the currently selected ToC entry
   .toc-link.active {
     background-color: $nav-active-bg;
-    color: $nav-active-text;
+    color: $white;
   }
 
   // this is parent links of the currently selected ToC entry
   .toc-link.active-parent {
     background-color: $nav-active-parent-bg;
-    color: $nav-active-parent-text;
+    color: $white;
   }
 
   .toc-list-h2 {
@@ -205,7 +206,7 @@ html, body {
   white-space: nowrap;
   text-overflow: ellipsis;
   text-decoration: none;
-  color: #fff;
+  color: $nav-text;
   transition-property: background;
   transition-timing-function: linear;
   transition-duration: 130ms;
@@ -329,10 +330,11 @@ html, body {
   }
 
   &>h1, &>h2, &>h3, &>h4, &>h5, &>h6, &>p, &>table, &>ul, &>ol, &>aside, &>dl {
-    margin-right: $examples-width;
+    margin-right: $examples-width + 1;
     padding: 0 $main-padding;
     box-sizing: border-box;
     display: block;
+    margin-left: 28px;
 
     @extend %left-col;
   }
@@ -465,8 +467,11 @@ html, body {
     padding-bottom: 1em;
     margin-top: 1.5em;
     margin-bottom: 1.5em;
+    margin-left: 28px;
     background: $aside-notice-bg;
+    color: $white;
     line-height: 1.6;
+    border-radius: 5px;
 
     &.warning {
       background-color: $aside-warning-bg;
@@ -607,6 +612,14 @@ html, body {
 
 .highlight .c, .highlight .cm, .highlight .c1, .highlight .cs {
   color: #909090;
+}
+
+.highlight .err{
+  color: #f92672;
+}
+
+.highlight .mi{
+  color: #e6db74;
 }
 
 .highlight, .highlight .w {
