@@ -17,164 +17,18 @@ search: true
 # GenePlaza Developer API
 **Introduction**
 
-GenePlaza helps you to quickly develop Genetic Apps to distribute them in our Genetic App Store or to use them on your own site.
+The GenePlaza API helps you to quickly develop Genetic Apps to distribute them in our Genetic App Store or to use them on your own site.
 
-# Access genetic traits
-
-## Create a dataset
-
-Create a dataset by uploading your data in .txt or .zip format. We support build_37 data from 23andme, AncestryDNA, and MyHeritage.
-
-### Upload data
-
-```shell
-curl -F ‘data=@path/to/local/genotype/file.[txt|zip]’ \
-  -H 'authorization: Bearer <accessToken>' \
-  'https://developer.geneplaza.com/upload'
-```
-
-```json
-{
-    "data": {
-        "type": "dataset",
-        "id": <datasetId>,
-        "links": {
-            "self": "https://developer.geneplaza.com/dataset/<datasetId>"
-        },
-        "attributes": {
-            "datasetId": 18
-        }
-    }
-}
-```
-
-Upload a 23andme, AncestryDNA, MyHeritage file and a dataset will be created.
-
-<aside class="notice">
-You must concatenate MyHeritage files to include autosomal DNA followed by the X chromosome.
-</aside>
-
-## Traits
-### List traits
-
-```shell
-curl -X GET -H 'authorization: Bearer <accessToken>' \
-   'https://developer.geneplaza.com/traits'
-```
-
-```json
-{
-    "data": [
-      {
-        "type": "trait",
-        "id": <traitid>,
-        "attributes": {
-          "name": "ancestry",
-          "variants": ["rs23432",..., "rs23432"]
-        }
-      },
-      {
-        "type": "trait",
-        "id": <traitid>,
-        "attributes": {
-          "name": "coffee_metabolism",
-          "variants": ["rs72893",..., "rs83738"]
-        }
-      }
-    ]
-}
-```
-
-List all traits available.
-
-This method returns all available traits available from the GenePlaza API. Use the ```<traitid>``` and a ```<datasetid>``` to request traits for given dataset.
-
-### Get trait for dataset
-
-```shell
-curl -X GET -H 'authorization: Bearer <accessToken>' \
-'https://developer.geneplaza.com/dataset/<datasetId>/trait/<traitId>'
-```
-
-```json
-{
-    "data": {
-      "type": "trait-result",
-      "id": <trait-result>,
-      "attributes": {
-          "status": "running",
-      }
-    }
-}
-```
-```json
-OR when ready
-
-{
-    "data": {
-      "type": "trait-result",
-      "id": <trait-result>,
-      "attributes": {
-          "status": "ready",
-          "type": "binary | quantitative",
-          "effectSizeDistributions": {
-              "EUR": [[x1,y1], [x2,y2], ...],
-              "EAS": [[x1,y1], [x2,y2], ...],
-              "AFR": [[x1,y1], [x2,y2], ...],
-              "AMR": [[x1,y1], [x2,y2], ...],
-              "SAS": [[x1,y1], [x2,y2], ...]
-          },
-          "zScore": 0.5,
-          "effectSize": 23.2343,
-          "ethnicity": "EUR",
-          "genotypeScores": {
-            "rs78503206": {
-              "genotype": "CC",
-              "effectSize": 0.052336227229741565
-            },
-            "rs6554267": {
-              "genotype": "TT",
-              "effectSize": -0.0324724484302187
-            },
-            "rs7227945": {
-              "genotype": "TT",
-              "effectSize": -0.035994294104095395
-            },
-            "rs72921001": {
-              "genotype": "AA",
-              "effectSize": -0.27263571801638176
-            },
-            "rs75378433": {
-              "genotype": "CC",
-              "effectSize": 0.05236703124421473
-            },
-            "rs13412810": {
-              "genotype": "GG",
-              "effectSize": 0.07638294299624267
-            }
-          }
-        }
-      }
-    }
-}
-```
-
-This will generate and get the trait results for a given datasetId.
-
-#### Parameters
-
-| Parameter     | Required | Description                                                                                              |
-| ------------- | -------- | -------------------------------------------------------------------------------------------------------- |
-| accessToken   | true     | Your accessToken                                                                     |
-| datasetId     | true     | Id of the dataset you which to have access to the genetic data.|
-| traitId | true     | The id of the trait you want results for                                                                               |
-
-
-# Deploy App Store applications 
+Our API is organized around REST. It uses predictable resource-oriented URLs, accepts form-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes, authentication, and verbs.
 
 ## Authentication
 
 To be able to authenticate you first need to have **credentials**. Contact us for this.
+
+The GenePlaza API uses API keys to authenticate requests.
+
+Your API keys carry many privileges, so be sure to keep them secure! Do not share your secret API keys in publicly accessible areas such as GitHub, client-side code, and so forth.
+
 When an analysis is started a webhook of yours is called with the the `authorizationCode`. Use this `authorizationCode` to authenticate and get an `accessToken` back.
 
 Once you have **credentials** you also need to register an application. You can have several applications registered per account. Each application need to have a two endpoints:
@@ -261,6 +115,159 @@ curl -X POST \
 | Parameter                | Default | Description                          |
 | ------------------------ | ------- | ------------------------------------ |
 | 64encode_usercredentials | false   | base64 encode of `username:password` |
+
+
+# Access genetic traits
+
+## Create a dataset
+
+Create a dataset by uploading your data in .txt or .zip format. We support build_37 data from 23andme, AncestryDNA, and MyHeritage. We also accpet zipped vcf Genvoce low-pass sequencing files. This method will return a unique ID which you can use store and re-use to compute traits on this dataset.
+
+### Upload data
+
+```shell
+curl -F ‘data=@path/to/local/genotype/file.[txt|zip]’ \
+  -H 'authorization: Bearer <accessToken>' \
+  'https://developer.geneplaza.com/upload'
+```
+
+```json
+{
+    "data": {
+        "type": "dataset",
+        "id": <datasetId>,
+        "links": {
+            "self": "https://developer.geneplaza.com/dataset/<datasetId>"
+        },
+        "attributes": {
+            "datasetId": 18
+        }
+    }
+}
+```
+
+Upload a 23andme, AncestryDNA, MyHeritage, or Gencove file and a dataset will be created with a unique ID.
+
+<aside class="notice">
+You must concatenate MyHeritage files to include autosomal DNA followed by the X chromosome.
+</aside>
+
+## Traits
+### List traits
+
+```shell
+curl -X GET -H 'authorization: Bearer <accessToken>' \
+   'https://developer.geneplaza.com/traits'
+```
+
+```json
+{
+    "data": [
+      {
+        "type": "trait",
+        "id": <traitid>,
+        "attributes": {
+          "name": "ancestry",
+          "variants": ["rs23432",..., "rs23432"]
+        }
+      },
+      {
+        "type": "trait",
+        "id": <traitid>,
+        "attributes": {
+          "name": "coffee_metabolism",
+          "variants": ["rs72893",..., "rs83738"]
+        }
+      }
+    ]
+}
+```
+
+This method returns a list of unique IDs and descriptions for all available traits available from the GenePlaza API. Use the ```<traitid>``` and a ```<datasetid>``` to request traits for given dataset.
+
+### Get trait for dataset
+
+```shell
+curl -X GET -H 'authorization: Bearer <accessToken>' \
+'https://developer.geneplaza.com/dataset/<datasetId>/trait/<traitId>'
+```
+
+```json
+{
+    "data": {
+      "type": "trait-result",
+      "id": <trait-result>,
+      "attributes": {
+          "status": "running",
+      }
+    }
+}
+```
+```json
+OR when ready
+
+{
+    "data": {
+      "type": "trait-result",
+      "id": <trait-result>,
+      "attributes": {
+          "status": "ready",
+          "type": "binary | quantitative",
+          "effectSizeDistributions": {
+              "EUR": [[x1,y1], [x2,y2], ...],
+              "EAS": [[x1,y1], [x2,y2], ...],
+              "AFR": [[x1,y1], [x2,y2], ...],
+              "AMR": [[x1,y1], [x2,y2], ...],
+              "SAS": [[x1,y1], [x2,y2], ...]
+          },
+          "zScore": 0.5,
+          "effectSize": 23.2343,
+          "ethnicity": "EUR",
+          "genotypeScores": {
+            "rs78503206": {
+              "genotype": "CC",
+              "effectSize": 0.052336227229741565
+            },
+            "rs6554267": {
+              "genotype": "TT",
+              "effectSize": -0.0324724484302187
+            },
+            "rs7227945": {
+              "genotype": "TT",
+              "effectSize": -0.035994294104095395
+            },
+            "rs72921001": {
+              "genotype": "AA",
+              "effectSize": -0.27263571801638176
+            },
+            "rs75378433": {
+              "genotype": "CC",
+              "effectSize": 0.05236703124421473
+            },
+            "rs13412810": {
+              "genotype": "GG",
+              "effectSize": 0.07638294299624267
+            }
+          }
+        }
+      }
+    }
+}
+```
+
+This will generate and get the trait results for a given datasetId.
+
+#### Parameters
+
+| Parameter     | Required | Description                                                                                              |
+| ------------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| accessToken   | true     | Your accessToken                                                                     |
+| datasetId     | true     | Id of the dataset you which to have access to the genetic data.|
+| traitId | true     | The id of the trait you want results for                                                                               |
+
+
+# Deploy App Store applications
+
 
 ## Create an application
 
