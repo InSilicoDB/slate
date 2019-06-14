@@ -44,7 +44,7 @@ The `authorization_code` is sent by us to your webhook registered in your applic
 <aside class="info">
 The access token you will get back, will give you access to the `analysis`, `snp` and `report pages` endpoints.
 </aside>
-> To authorize, use this code:
+> To authenticate, use this code:
 
 ```shell
 # With shell, you can just pass the correct header with each request
